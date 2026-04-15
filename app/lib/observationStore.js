@@ -1,8 +1,8 @@
 import { idText } from 'typescript'
 import { create } from 'zustand'
 
-// const host = "https://observation-api.harrisowe.me/api"
-const host = "http://localhost:8080/api"
+const host = "https://observation-api.harrisowe.me/api"
+// const host = "http://localhost:8080/api"
 
 const useObservationStore = create((set, get) => ({
     user: null,
