@@ -1,41 +1,8 @@
 import { Link } from "react-router";
 import useObservationStore from "../lib/observationStore";
 import { Button } from "@/components/ui/button"
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DataTable } from "../components/DataTable";
-
-const test = {
-    "phenomenon": {
-      "id": 1,
-      "name": "Obesity",
-      "phenomenonType": {
-        "name": "Weight Status",
-        "type": "QUAL",
-        "allowedUnits": [],
-        "id": 1
-      }
-    },
-    "presence": "PRESENT",
-    "patient": {
-      "dateOfBirth": "2004-04-10",
-      "note": "test",
-      "fullName": "Owen Harris",
-      "hibernateLazyInitializer": {},
-      "id": 1
-    },
-    "recordingTime": "2026-04-14T21:52:25.019",
-    "applicabilityTime": "2026-04-14T21:52:25.019",
-    "protocol": {
-      "name": "Test Protocol",
-      "description": "test",
-      "accuracyRating": "HIGH",
-      "id": 1
-    },
-    "id": 2,
-    "observationStatus": "ACTIVE",
-    "rejectionReason": null,
-    "type": "category"
-  }
 
 const columnCategory = [
     {
@@ -141,6 +108,9 @@ export default function PatientPage({params}) {
     const fetchPatients = useObservationStore(state => state.fetchPatients)
     const observations = useObservationStore(state => state.observations)
     const fetchObservations = useObservationStore(state => state.fetchObservations);
+    const evaluateRules = useObservationStore(state => state.evaluateRules);
+
+    const [rulesResult, setRulesResult] = useState(null);
 
     const categoryObservations = observations.filter(o => o.type == "category");
     const measurementObservations = observations.filter(o => o.type == "measurement");
@@ -149,14 +119,19 @@ export default function PatientPage({params}) {
     useEffect(() => {
         fetchObservations(id)
     }, [])
-    
+
     useEffect(() => {
         console.log(observations)
     }, [observations])
 
     if (!patient) {
         fetchPatients()
-        return <div>Loading</div>    
+        return <div>Loading</div>
+    }
+
+    const handleEvaluateRules = async () => {
+        const result = await evaluateRules(id);
+        setRulesResult(result);
     }
 
     return (
@@ -168,11 +143,26 @@ export default function PatientPage({params}) {
             <DataTable columns={columnMeasurement} data={measurementObservations} />
             <h2 className="mt-1 text-xl">Category Observations:</h2>
             <DataTable columns={columnCategory} data={categoryObservations} />
-            <Button varient="outline" >
-                <Link to={"/new-observation/" + patient.id} >
-                    Record Observation
-                </Link>
-            </Button>
+            <div className="mt-2 flex gap-2">
+                <Button varient="outline" >
+                    <Link to={"/new-observation/" + patient.id} >
+                        Record Observation
+                    </Link>
+                </Button>
+                <Button variant="outline" onClick={handleEvaluateRules}>
+                    Evaluate Rules
+                </Button>
+            </div>
+            {rulesResult && (
+                <div className="mt-2">
+                    <h2 className="text-xl">Rule Evaluation Results:</h2>
+                    <ul className="list-disc list-inside">
+                        {rulesResult.map(p => (
+                            <li key={p.id}>{p.phenomenonType.name} : {p.name}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </div>
     )
 }

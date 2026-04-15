@@ -1,8 +1,8 @@
 import { idText } from 'typescript'
 import { create } from 'zustand'
 
-const host = "https://observation-api.harrisowe.me/api"
-// const host = "http://localhost:8080/api"
+// const host = "https://observation-api.harrisowe.me/api"
+const host = "http://localhost:8080/api"
 
 const useObservationStore = create((set, get) => ({
     user: null,
@@ -165,6 +165,14 @@ const useObservationStore = create((set, get) => ({
         }
         const json = await response.json();
         set({observations: json})
+    },
+    evaluateRules: async (patientId) => {
+        const response = await fetch(`${host}/patients/${patientId}/evaluate`)
+        if (!response.ok) {
+            console.error("Failed to evaluate rules")
+            return [];
+        }
+        return await response.json();
     },
     rejectObservation: async (id, reason) => {
         const response = await fetch(`${host}/observations/${id}/reject`, {
