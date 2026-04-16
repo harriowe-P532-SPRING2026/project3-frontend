@@ -167,7 +167,9 @@ const useObservationStore = create((set, get) => ({
         set({observations: json})
     },
     evaluateRules: async (patientId) => {
-        const response = await fetch(`${host}/patients/${patientId}/evaluate`)
+        const response = await fetch(`${host}/patients/${patientId}/evaluate`, {
+            method: "POST"
+        })
         if (!response.ok) {
             console.error("Failed to evaluate rules")
             return [];
