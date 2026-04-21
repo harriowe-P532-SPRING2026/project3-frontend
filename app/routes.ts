@@ -11,5 +11,7 @@ export default [
     route("/phenomenon-types/new", "routes/new-phenomenon-type.jsx"),
     route("/protocols", "routes/protocols.jsx"),
     route("/protocols/new", "routes/new-protocol.jsx"),
-    route("/audit-log", "routes/audit-log.jsx")
+    route("/audit-log", "routes/audit-log.jsx"),
+    route("/functions", "routes/functions.jsx"),
+    route("/functions/new", "routes/new-function.jsx")
 ] satisfies RouteConfig;

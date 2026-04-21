@@ -1,8 +1,8 @@
 import { idText } from 'typescript'
 import { create } from 'zustand'
 
-const host = "https://observation-api.harrisowe.me/api"
-// const host = "http://localhost:8080/api"
+// const host = "https://observation-api.harrisowe.me/api"
+const host = "http://localhost:8080/api"
 
 const useObservationStore = create((set, get) => ({
     user: null,
@@ -86,6 +86,36 @@ const useObservationStore = create((set, get) => ({
         }
         const phenomenonTypes = await response.json();
         set({phenomenonTypes})
+    },
+    functions: [],
+    fetchFunctions : async() => {
+        const response = await fetch(`${host}/observations/function`)
+        if (!response.ok) {
+            console.error("Failed to fetch functions")
+        }
+        const functions = await response.json();
+        set({functions})
+    },
+    newFunction: async(name, argumentConcepts, weights, strategy, threshold, productConceptId) => {
+        const response = await fetch(`${host}/observations/function`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name,
+                argumentConceptsIds: argumentConcepts,
+                weights: weights,
+                strategy,
+                threshold,
+                productConceptId
+            })
+        })
+        if (!response.ok) {
+            alert("Failed to create function");
+            return false;
+        }
+        return true;
     },
     newPhenomenonType: async (name, kind, allowedUnits, phenomena) => {
         const response = await fetch(`${host}/phenomenon-types`, {
