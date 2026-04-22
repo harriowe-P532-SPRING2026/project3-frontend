@@ -24,6 +24,8 @@ export default function NewPhenomenonType() {
     const [kind, setKind] = useState("QUANT")
     const [allowedUnits, setAllowedUnits] = useState([])
     const [unitInput, setUnitInput] = useState("")
+    const [normalMin, setNormalMin] = useState("")
+    const [normalMax, setNormalMax] = useState("")
     const [newPhenomena, setNewPhenomena] = useState([])
     const [phenomenonInput, setPhenomenonInput] = useState("")
     const [parentConceptInput, setParentConceptInput] = useState("")
@@ -34,7 +36,7 @@ export default function NewPhenomenonType() {
     }, [])
 
     async function createPhenomenonType() {
-        if (await newPhenomenonType(name, kind, kind === "QUANT" ? allowedUnits : [], kind === "QUAL" ? newPhenomena : [])) {
+        if (await newPhenomenonType(name, kind, kind === "QUANT" ? allowedUnits : [], kind === "QUAL" ? newPhenomena : [], normalMin ? Number(normalMin) : null, normalMax ? Number(normalMax) : null)) {
             navigate("/phenomenon-types")
         }
     }
@@ -81,20 +83,32 @@ export default function NewPhenomenonType() {
                 </Field>
 
                 {kind === "QUANT" &&
-                    <Field>
-                        <FieldLabel htmlFor="fieldgroup-unit-input">Allowed Units</FieldLabel>
-                        <div className="flex gap-2">
-                            <Input id="fieldgroup-unit-input" value={unitInput} onChange={(e) => setUnitInput(e.target.value)}/>
-                            <Button type="button" onClick={() => addUnit()} disabled={!unitInput.trim()}>Add</Button>
-                        </div>
-                        <div>
-                            {allowedUnits.map(u => (
-                                <div key={u}>
-                                    {u} <button type="button" onClick={() => setAllowedUnits(allowedUnits.filter(x => x !== u))}> X</button>
-                                </div>
-                            ))}
-                        </div>
-                    </Field>
+                    <>
+                        <Field>
+                            <FieldLabel htmlFor="fieldgroup-unit-input">Allowed Units</FieldLabel>
+                            <div className="flex gap-2">
+                                <Input id="fieldgroup-unit-input" value={unitInput} onChange={(e) => setUnitInput(e.target.value)}/>
+                                <Button type="button" onClick={() => addUnit()} disabled={!unitInput.trim()}>Add</Button>
+                            </div>
+                            <div>
+                                {allowedUnits.map(u => (
+                                    <div key={u}>
+                                        {u} <button type="button" onClick={() => setAllowedUnits(allowedUnits.filter(x => x !== u))}> X</button>
+                                    </div>
+                                ))}
+                            </div>
+                        </Field>
+
+                        <Field>
+                            <FieldLabel htmlFor="fieldgroup-normal-min">Normal Min</FieldLabel>
+                            <Input id="fieldgroup-normal-min" type="number" value={normalMin} onChange={(e) => setNormalMin(e.target.value)} />
+                        </Field>
+
+                        <Field>
+                            <FieldLabel htmlFor="fieldgroup-normal-max">Normal Max</FieldLabel>
+                            <Input id="fieldgroup-normal-max" type="number" value={normalMax} onChange={(e) => setNormalMax(e.target.value)} />
+                        </Field>
+                    </>
                 }
 
                 {kind === "QUAL" &&

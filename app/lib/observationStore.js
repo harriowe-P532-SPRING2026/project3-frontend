@@ -120,7 +120,7 @@ const useObservationStore = create((set, get) => ({
         }
         return true;
     },
-    newPhenomenonType: async (name, kind, allowedUnits, phenomena) => {
+    newPhenomenonType: async (name, kind, allowedUnits, phenomena, normalMin, normalMax) => {
         const response = await fetch(`${host}/phenomenon-types`, {
             method: "POST",
             headers: {
@@ -131,7 +131,9 @@ const useObservationStore = create((set, get) => ({
                 kind,
                 allowedUnits,
                 phenomena,
-                userId: get().user.id
+                userId: get().user.id,
+                normalMin,
+                normalMax
             })
         })
         if (!response.ok) {
