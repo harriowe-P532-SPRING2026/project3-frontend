@@ -5,7 +5,7 @@ import {
     FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Select,
     SelectContent,
@@ -18,16 +18,23 @@ import useObservationStore from "../lib/observationStore";
 
 export default function NewPhenomenonType() {
     const newPhenomenonType = useObservationStore(state => state.newPhenomenonType)
+    const phenomena = useObservationStore(state => state.phenomena)
+    const fetchPhenomena = useObservationStore(state => state.fetchPhenomena)
     const [name, setName] = useState("")
     const [kind, setKind] = useState("QUANT")
     const [allowedUnits, setAllowedUnits] = useState([])
     const [unitInput, setUnitInput] = useState("")
-    const [phenomena, setPhenomena] = useState([])
+    const [newPhenomena, setNewPhenomena] = useState([])
     const [phenomenonInput, setPhenomenonInput] = useState("")
+    const [parentConceptInput, setParentConceptInput] = useState("")
     const navigate = useNavigate()
 
+    useEffect(() => {
+        fetchPhenomena()
+    }, [])
+
     async function createPhenomenonType() {
-        if (await newPhenomenonType(name, kind, kind === "QUANT" ? allowedUnits : [], kind === "QUAL" ? phenomena : [])) {
+        if (await newPhenomenonType(name, kind, kind === "QUANT" ? allowedUnits : [], kind === "QUAL" ? newPhenomena : [])) {
             navigate("/phenomenon-types")
         }
     }
@@ -43,9 +50,12 @@ export default function NewPhenomenonType() {
     function addPhenomenon() {
         const trimmed = phenomenonInput.trim()
         if (trimmed) {
-            setPhenomena([...phenomena, { name: trimmed }])
+            const item = { name: trimmed }
+            if (parentConceptInput) item.parentConcept = Number(parentConceptInput)
+            setNewPhenomena([...newPhenomena, item])
         }
         setPhenomenonInput("")
+        setParentConceptInput("")
     }
 
     return (
@@ -89,15 +99,31 @@ export default function NewPhenomenonType() {
 
                 {kind === "QUAL" &&
                     <Field>
-                        <FieldLabel htmlFor="fieldgroup-phenomenon-input">Phenomena</FieldLabel>
+                        <FieldLabel>Phenomena</FieldLabel>
                         <div className="flex gap-2">
-                            <Input id="fieldgroup-phenomenon-input" value={phenomenonInput} onChange={(e) => setPhenomenonInput(e.target.value)}/>
+                            <Input
+                                id="fieldgroup-phenomenon-input"
+                                placeholder="Name"
+                                value={phenomenonInput}
+                                onChange={(e) => setPhenomenonInput(e.target.value)}
+                            />
+                            <Select value={parentConceptInput} onValueChange={setParentConceptInput}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Parent (optional)" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {phenomena.map(p => (
+                                        <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
                             <Button type="button" onClick={() => addPhenomenon()} disabled={!phenomenonInput.trim()}>Add</Button>
                         </div>
                         <div>
-                            {phenomena.map((p, i) => (
+                            {newPhenomena.map((p, i) => (
                                 <div key={i}>
-                                    {p.name} <button type="button" onClick={() => setPhenomena(phenomena.filter((_, j) => j !== i))}> X</button>
+                                    {p.name}{p.parentConcept ? ` (parent: ${phenomena.find(x => x.id === p.parentConcept)?.name ?? p.parentConcept})` : ""}
+                                    {" "}<button type="button" onClick={() => setNewPhenomena(newPhenomena.filter((_, j) => j !== i))}> X</button>
                                 </div>
                             ))}
                         </div>

@@ -9,14 +9,20 @@ const columnCategory = [
         accessorKey: "patient",
         header: "Phenomenon Type",
         cell: ({row}) => {
-            return row.original.phenomenon.phenomenonType.name
+            const name = row.original.phenomenon.phenomenonType.name
+            return row.original.source === "INFERRED"
+                ? <em>{name}</em>
+                : <span>{name}</span>
         }
     },
     {
         accessorKey: "phenomenon",
         header: "Phenomenon",
         cell: ({row}) => {
-            return row.original.phenomenon.name
+            const name = row.original.phenomenon.name
+            return row.original.source === "INFERRED"
+                ? <em>{name}</em>
+                : <span>{name}</span>
         }
     },
     {
@@ -157,8 +163,19 @@ export default function PatientPage({params}) {
                 <div className="mt-2">
                     <h2 className="text-xl">Rule Evaluation Results:</h2>
                     <ul className="list-disc list-inside">
-                        {rulesResult.map(p => (
-                            <li key={p.id}>{p.phenomenonType.name} : {p.name}</li>
+                        {rulesResult.map((p, i) => (
+                            <li key={i}>
+                                {p.phenomenon.phenomenonType.name} : {p.phenomenon.name}
+                                {p.relevantObservations?.length > 0 && (
+                                    <ul className="list-disc list-inside ml-4">
+                                        {p.relevantObservations.map(o => (
+                                            <li key={o.id}>
+                                                {o.phenomenon.phenomenonType.name} : {o.phenomenon.name}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </li>
                         ))}
                     </ul>
                 </div>

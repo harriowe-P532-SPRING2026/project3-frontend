@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import useObservationStore from "../lib/observationStore";
 import { DataTable } from "../components/DataTable";
+import { Button } from "@/components/ui/button";
 
 const auditColumnDef = [
     {
@@ -28,37 +29,59 @@ const auditColumnDef = [
     },
 ]
 
-const commandColumnDef = [
-    {
-        accessorKey: "commandType",
-        header: "Command",
-    },
-    {
-        accessorKey: "user",
-        header: "User",
-        cell: ({ row }) => row.getValue("user")?.fullName || "System",
-    },
-    {
-        accessorKey: "executedAt",
-        header: "Executed At",
-        cell: ({ row }) => new Date(row.getValue("executedAt")).toLocaleString(),
-    },
-    {
-        accessorKey: "json",
-        header: "Details",
-        cell: ({ row }) => {
-            const json = row.getValue("json")
-            const abbreviated = json.length > 40 ? json.slice(0, 40) + "..." : json
-            return <span title={json} className="cursor-default">{abbreviated}</span>
-        },
-    },
-]
-
 export default function AuditLog() {
     const auditLog = useObservationStore(state => state.auditLog)
     const fetchAuditLog = useObservationStore(state => state.fetchAuditLog)
     const commandLog = useObservationStore(state => state.commandLog)
     const fetchCommandLog = useObservationStore(state => state.fetchCommandLog)
+    const undoCommand = useObservationStore(state => state.undoCommand)
+
+    const commandColumnDef = [
+        {
+            accessorKey: "commandType",
+            header: "Command",
+        },
+        {
+            accessorKey: "user",
+            header: "User",
+            cell: ({ row }) => row.getValue("user")?.fullName || "System",
+        },
+        {
+            accessorKey: "executedAt",
+            header: "Executed At",
+            cell: ({ row }) => new Date(row.getValue("executedAt")).toLocaleString(),
+        },
+        {
+            accessorKey: "json",
+            header: "Details",
+            cell: ({ row }) => {
+                const json = row.getValue("json")
+                const abbreviated = json.length > 40 ? json.slice(0, 40) + "..." : json
+                return <span title={json} className="cursor-default">{abbreviated}</span>
+            },
+        },
+        {
+            accessorKey: "undone",
+            header: "Undone",
+            cell: ({ row }) => row.getValue("undone") ? "Yes" : "No",
+        },
+        {
+            id: "undo",
+            header: "",
+            cell: ({ row }) => (
+                <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={row.original.undone}
+                    onClick={async () => {
+                        if (await undoCommand(row.original.id)) fetchCommandLog()
+                    }}
+                >
+                    Undo
+                </Button>
+            ),
+        },
+    ]
 
     useEffect(() => {
         fetchAuditLog()

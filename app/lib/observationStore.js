@@ -6,6 +6,7 @@ const host = "http://localhost:8080/api"
 
 const useObservationStore = create((set, get) => ({
     user: null,
+    users: [],
     fetchUser: async () => {
         const response = await fetch(`${host}/patients/user`)
         if (!response.ok) {
@@ -15,9 +16,10 @@ const useObservationStore = create((set, get) => ({
         if (json.length == 0) {
             alert("No users found")
         } else {
-            set({user: json[0]})
+            set({users: json, user: json[0]})
         }
     },
+    setUser: (user) => set({user}),
     patients: [],
     fetchPatients: async () => {
         const response = await fetch(`${host}/patients`)
@@ -108,7 +110,8 @@ const useObservationStore = create((set, get) => ({
                 weights: weights,
                 strategy,
                 threshold,
-                productConceptId
+                productConceptId,
+                userId: get().userId
             })
         })
         if (!response.ok) {
@@ -187,6 +190,22 @@ const useObservationStore = create((set, get) => ({
         const commandLog = await response.json();
         set({commandLog})
     },
+    undoCommand: async (id) => {
+        const response = await fetch(`${host}/command-log/${id}/undo`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(get().user.id)
+        })
+        if (!response.ok) {
+            alert("Failed to undo command")
+            return false;
+        } else {
+            return true;
+        }
+
+    },
     observations: [],
     fetchObservations: async (patientId) => {
         const response = await fetch(`${host}/patients/${patientId}/observations`)
@@ -204,7 +223,9 @@ const useObservationStore = create((set, get) => ({
             console.error("Failed to evaluate rules")
             return [];
         }
-        return await response.json();
+        const json = await response.json();
+        console.log(json);
+        return json;
     },
     rejectObservation: async (id, reason) => {
         const response = await fetch(`${host}/observations/${id}/reject`, {
